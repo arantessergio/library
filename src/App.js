@@ -1,11 +1,10 @@
 import React from "react";
+import "./global.css";
+
+import { ListPage } from "./Pages/List";
 
 const App = () => {
-  return (
-    <div>
-      <span>Hello initial commit!</span>
-    </div>
-  );
+  return <ListPage />;
 };
 
 export default App;
