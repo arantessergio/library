@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useRouteMatch, useHistory } from "react-router-dom";
-import { get } from "../../Services/Api";
+import { get, put } from "../../Services/Api";
 import { Header } from "../../Components/Header";
-import { Typography, Grid, Button } from "@material-ui/core";
-import { Paper, Container, BackIcon } from "./styles";
+import { Snackbar } from "@material-ui/core";
+import { Container } from "./styles";
+
+import { ViewPage } from "./Visualize";
+import { FormPage } from "./Form";
 
 const INITIAL_ENTITY = {
   id: "",
@@ -12,6 +15,11 @@ const INITIAL_ENTITY = {
   editora: "",
   ano: 0,
   isbn: "",
+  idioma: "",
+  peso: "",
+  largura: "",
+  altura: "",
+  comprimento: "",
 };
 
 const Details = () => {
@@ -21,6 +29,9 @@ const Details = () => {
   const history = useHistory();
 
   const [entity, setEntity] = useState(INITIAL_ENTITY);
+  const [editMode, setEditMode] = useState(false);
+  const [editEntity, setEditEntity] = useState(INITIAL_ENTITY);
+  const [snack, setSnack] = useState({ show: false, message: "" });
 
   useEffect(() => {
     const getBook = async () => {
@@ -35,58 +46,63 @@ const Details = () => {
     getBook();
   }, [id]);
 
+  useEffect(() => {
+    setEditEntity(entity);
+  }, [entity]);
+
+  const toggleEditMode = () => setEditMode(!editMode);
+
+  const handleChange = (key, value) =>
+    setEditEntity((x) => ({ ...x, [key]: value }));
+
+  const handleSnackbar = (message) => {
+    setSnack({ show: true, message: "Registro atualizado com sucesso!" });
+
+    setTimeout(() => {
+      setSnack({ show: false, message: "" });
+    }, 4000);
+  };
+
+  const onSave = async () => {
+    try {
+      if (id) {
+        const result = await put(editEntity, id);
+        if (result?.status === 204) {
+          handleSnackbar("Registro atualizado com sucesso");
+          setEntity(editEntity);
+          toggleEditMode();
+        }
+      }
+    } catch (error) {
+      handleSnackbar("Ocorreu um erro ao processar sua solicitação");
+      console.error(error);
+    }
+  };
+
   return (
     <>
       <Header />
       <Container>
-        <Paper>
-          <Grid container spacing={2}>
-            <Grid item sm={12}>
-              <Typography variant="h6">{entity.titulo}</Typography>
-            </Grid>
-            <Grid item sm={6}>
-              <Typography>{`Autor: ${entity.autor}`}</Typography>
-            </Grid>
-            <Grid item sm={6}>
-              <Typography>{`ISBN: ${entity.isbn}`}</Typography>
-            </Grid>
-            <Grid item sm={6}>
-              <Typography>{`Ano: ${entity.ano}`}</Typography>
-            </Grid>
-            <Grid item sm={6}>
-              <Typography>{`Editora: ${entity.editora}`}</Typography>
-            </Grid>
-            <Grid item sm={6}>
-              <Typography>{`Idioma: ${entity.idioma}`}</Typography>
-            </Grid>
-            <Grid item sm={12}>
-              <Typography>Dimensões:</Typography>
-            </Grid>
-            <Grid item container>
-              <Grid item sm={2}>
-                <Typography variant="caption">{`Largura: ${entity.largura}`}</Typography>
-              </Grid>
-              <Grid item sm={2}>
-                <Typography variant="caption">{`Altura: ${entity.altura}`}</Typography>
-              </Grid>
-              <Grid item sm={2}>
-                <Typography variant="caption">{`Comprimento: ${entity.comprimento}`}</Typography>
-              </Grid>
-              <Grid item sm={2}>
-                <Typography variant="caption">{`Peso: ${entity.peso}`}</Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-        </Paper>
-        <Button
-          variant="contained"
-          color="default"
-          startIcon={<BackIcon />}
-          onClick={() => history.goBack()}
-        >
-          Voltar
-        </Button>
+        {!editMode ? (
+          <ViewPage entity={entity} toggleEditMode={toggleEditMode} />
+        ) : (
+          <FormPage
+            entity={editEntity}
+            toggleEditMode={toggleEditMode}
+            handleChange={handleChange}
+            onSave={onSave}
+          />
+        )}
       </Container>
+      <Snackbar
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        open={snack.show}
+        autoHideDuration={4000}
+        message={snack.message}
+      />
     </>
   );
 };
