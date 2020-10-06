@@ -6,30 +6,31 @@ import {
   Container,
   TableContainer,
   SearchContainer,
-  Button,
   Input,
+  SubHeader,
+  TextField,
+  YearFieldContainer,
+  Button,
 } from "./styles";
-
 import {
   TableBody,
   TableCell,
   TableHead,
   TableRow,
   Paper,
-  AppBar,
-  Toolbar,
   Typography,
 } from "@material-ui/core";
-
 import { Pagination } from "@material-ui/lab";
 import { EmptyState } from "../../Components/EmptyState";
 import { Loading } from "../../Components/Loading";
+import { Link } from "react-router-dom";
+import { Header } from "../../Components/Header";
 
 const INITIAL_FILTERS = {
   page: 1,
   perPage: 20,
   search: "",
-  startYear: 2000,
+  startYear: 0,
   endYear: 2020,
 };
 
@@ -38,18 +39,22 @@ const List = () => {
   const [data, setData] = useState([]);
   const [perPage, setPerPage] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
+  const [count, setCount] = useState(0);
 
   const [filters, setFilters] = useState(INITIAL_FILTERS);
+  const [startYear, setStartYear] = useState("");
+  const [endYear, setEndYear] = useState("");
 
   useEffect(() => {
     const list = async () => {
       try {
         const result = await listApi(filters);
-        console.log(result);
         if (result?.data?.items) {
           setData(result.data.items);
-          result.data.totalCount &&
+          if (result.data.totalCount) {
             setTotalPages(Math.ceil(result.data.totalCount / perPage));
+            setCount(result.data.totalCount);
+          }
         }
       } catch (error) {
         console.error(error);
@@ -62,21 +67,62 @@ const List = () => {
 
   const handleChange = (key, val) => setFilters((f) => ({ ...f, [key]: val }));
 
+  const handleYearFilter = () =>
+    setFilters((x) => ({ ...x, startYear, endYear }));
+
+  const handleCleanSearch = () => {
+    setStartYear("");
+    setEndYear("");
+    setFilters(INITIAL_FILTERS);
+  };
+
   return (
     <Container>
       <>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6">Supero</Typography>
-            <SearchContainer>
-              <Input
-                placeholder="Busque livros pelo título, autor ou ISBN"
-                inputProps={{ "aria-label": "search" }}
-                onChange={(e) => handleChange("search", e.target.value)}
-              />
-            </SearchContainer>
-          </Toolbar>
-        </AppBar>
+        <Header>
+          <SearchContainer>
+            <Input
+              placeholder="Busque livros pelo título, autor ou ISBN"
+              inputProps={{ "aria-label": "search" }}
+              onChange={(e) => handleChange("search", e.target.value)}
+              value={filters.search}
+            />
+          </SearchContainer>
+        </Header>
+        <SubHeader>
+          <Typography>Filtrar por ano de publicação</Typography>
+          <YearFieldContainer>
+            <TextField
+              label="Ano inicial"
+              onChange={(e) => setStartYear(e.target.value)}
+              variant="outlined"
+              value={startYear}
+            />
+            <TextField
+              label="Ano final"
+              onChange={(e) => setEndYear(e.target.value)}
+              variant="outlined"
+              value={endYear}
+            />
+            <Button
+              variant="contained"
+              color="secondary"
+              size="large"
+              onClick={handleYearFilter}
+            >
+              Buscar
+            </Button>
+            <Button
+              variant="contained"
+              color="default"
+              size="large"
+              onClick={handleCleanSearch}
+            >
+              Limpar
+            </Button>
+          </YearFieldContainer>
+          <Typography>{`${count} registros encontrados`}</Typography>
+        </SubHeader>
         {loading && <Loading />}
         {!!data?.length && !loading && (
           <TableContainer component={Paper}>
@@ -99,7 +145,9 @@ const List = () => {
                     <TableCell align="left">{row.autor}</TableCell>
                     <TableCell align="left">{row.editora}</TableCell>
                     <TableCell align="right">{row.ano}</TableCell>
-                    <TableCell align="center"></TableCell>
+                    <TableCell align="center">
+                      <Link to={`/books/${row.id}`}>Ver</Link>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

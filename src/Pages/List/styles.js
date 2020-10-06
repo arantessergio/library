@@ -3,6 +3,7 @@ import {
   TableContainer as tableContainer,
   Button as button,
   InputBase,
+  TextField as textField,
 } from "@material-ui/core";
 import styled from "styled-components";
 
@@ -16,6 +17,7 @@ export const Container = styled.div`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  align-items: center;
 `;
 
 export const TableContainer = styled(tableContainer)`
@@ -29,9 +31,29 @@ export const SearchContainer = styled.div`
   align-items: center;
 `;
 
-export const Button = styled(button)``;
+export const Button = styled(button)`
+  margin: 0 8px !important;
+`;
 
 export const Input = styled(InputBase)`
   width: 100%;
   color: #fff !important;
+`;
+
+export const SubHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  min-height: 100px;
+  width: 100%;
+  align-items: center;
+  padding: 20px;
+`;
+
+export const YearFieldContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+export const TextField = styled(textField)`
+  margin: 0 8px !important;
 `;
