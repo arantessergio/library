@@ -5,6 +5,7 @@ import {
   InputBase,
   TextField as textField,
 } from "@material-ui/core";
+import { Add } from "@material-ui/icons";
 import styled from "styled-components";
 
 export const Table = styled(table)`
@@ -18,6 +19,7 @@ export const Container = styled.div`
   flex-direction: column;
   flex-grow: 1;
   align-items: center;
+  padding-bottom: 20px;
 `;
 
 export const TableContainer = styled(tableContainer)`
@@ -57,3 +59,5 @@ export const YearFieldContainer = styled.div`
 export const TextField = styled(textField)`
   margin: 0 8px !important;
 `;
+
+export const AddIcon = styled(Add)``;

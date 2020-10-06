@@ -12,3 +12,5 @@ export const get = (id) => axios.get(`${BASE_URL}/livros/${id}`);
 export const post = (data) => axios.post(`${BASE_URL}/livros`, data);
 
 export const put = (data, id) => axios.put(`${BASE_URL}/livros/${id}`, data);
+
+export const remove = (id) => axios.delete(`${BASE_URL}/livros/${id}`);

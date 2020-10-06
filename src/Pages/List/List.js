@@ -19,12 +19,15 @@ import {
   TableRow,
   Paper,
   Typography,
+  Modal,
 } from "@material-ui/core";
 import { Pagination } from "@material-ui/lab";
 import { EmptyState } from "../../Components/EmptyState";
 import { Loading } from "../../Components/Loading";
 import { Link } from "react-router-dom";
 import { Header } from "../../Components/Header";
+
+import { FormPage } from "../Details/Form";
 
 const INITIAL_FILTERS = {
   page: 1,
@@ -35,9 +38,9 @@ const INITIAL_FILTERS = {
 };
 
 const List = () => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
-  const [perPage, setPerPage] = useState(20);
+  const [perPage] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
   const [count, setCount] = useState(0);
 
@@ -45,8 +48,11 @@ const List = () => {
   const [startYear, setStartYear] = useState("");
   const [endYear, setEndYear] = useState("");
 
+  const [formModal, setFormModal] = useState(false);
+
   useEffect(() => {
     const list = async () => {
+      setLoading(true);
       try {
         const result = await listApi(filters);
         if (result?.data?.items) {
@@ -62,7 +68,7 @@ const List = () => {
       setLoading(false);
     };
 
-    list();
+    !loading && list();
   }, [filters]);
 
   const handleChange = (key, val) => setFilters((f) => ({ ...f, [key]: val }));
@@ -76,9 +82,11 @@ const List = () => {
     setFilters(INITIAL_FILTERS);
   };
 
+  const toggleFormModal = () => setFormModal(!formModal);
+
   return (
-    <Container>
-      <>
+    <>
+      <Container>
         <Header>
           <SearchContainer>
             <Input
@@ -120,6 +128,14 @@ const List = () => {
             >
               Limpar
             </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              onClick={toggleFormModal}
+            >
+              Novo
+            </Button>
           </YearFieldContainer>
           <Typography>{`${count} registros encontrados`}</Typography>
         </SubHeader>
@@ -129,11 +145,21 @@ const List = () => {
             <Table aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell>Livro</TableCell>
-                  <TableCell align="left">Autor</TableCell>
-                  <TableCell align="left">Editora</TableCell>
-                  <TableCell align="right">Ano</TableCell>
-                  <TableCell align="center">Ações</TableCell>
+                  <TableCell>
+                    <strong>Livro</strong>
+                  </TableCell>
+                  <TableCell align="left">
+                    <strong>Autor</strong>
+                  </TableCell>
+                  <TableCell align="left">
+                    <strong>Editora</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>Ano</strong>
+                  </TableCell>
+                  <TableCell align="center">
+                    <strong>Ações</strong>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -162,8 +188,16 @@ const List = () => {
             onChange={(e, value) => handleChange("page", value)}
           />
         )}
-      </>
-    </Container>
+      </Container>
+      <Modal
+        open={formModal}
+        onClose={toggleFormModal}
+        aria-labelledby="simple-modal-title"
+        aria-describedby="simple-modal-description"
+      >
+        <FormPage goBack={toggleFormModal} />
+      </Modal>
+    </>
   );
 };
 

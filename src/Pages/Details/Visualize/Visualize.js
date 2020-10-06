@@ -1,5 +1,5 @@
-import React from "react";
-import { Typography, Grid } from "@material-ui/core";
+import React, { useState } from "react";
+import { Typography, Grid, Popover } from "@material-ui/core";
 import {
   Container,
   ActionsContainer,
@@ -8,11 +8,32 @@ import {
   EditIcon,
   TrashIcon,
   Paper,
+  ModalContainer,
+  RemoveActions,
 } from "../styles";
 import { useHistory } from "react-router-dom";
+import { remove } from "../../../Services/Api";
 
-const Visualize = ({ entity, toggleEditMode, onRemove }) => {
+const Visualize = ({ entity, toggleEditMode }) => {
   const history = useHistory();
+
+  const [removeModalOpen, setRemoveModalOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const toggleRemoveModalOpen = (event) => {
+    event && setAnchorEl(event.currentTarget);
+    setRemoveModalOpen(!removeModalOpen);
+  };
+
+  const onRemove = async () => {
+    try {
+      await remove(entity.id);
+
+      history.goBack();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <Container>
@@ -76,11 +97,48 @@ const Visualize = ({ entity, toggleEditMode, onRemove }) => {
           variant="contained"
           color="secondary"
           startIcon={<TrashIcon />}
-          onClick={onRemove}
+          onClick={toggleRemoveModalOpen}
+          aria-describedby={entity.id}
         >
           Remover
         </Button>
       </ActionsContainer>
+      <Popover
+        id={entity.id}
+        open={removeModalOpen}
+        onClose={toggleRemoveModalOpen}
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "center",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+      >
+        <ModalContainer>
+          <Typography variant="body1">Remover registro?</Typography>
+          <RemoveActions>
+            <Button
+              variant="contained"
+              color="default"
+              size="large"
+              onClick={toggleRemoveModalOpen}
+            >
+              Não
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              size="large"
+              onClick={onRemove}
+            >
+              Sim
+            </Button>
+          </RemoveActions>
+        </ModalContainer>
+      </Popover>
     </Container>
   );
 };
