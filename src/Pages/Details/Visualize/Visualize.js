@@ -13,9 +13,12 @@ import {
 } from "../styles";
 import { useHistory } from "react-router-dom";
 import { remove } from "../../../Services/Api";
+import { useAuthContext } from "../../../Contexts/Auth";
 
 const Visualize = ({ entity, toggleEditMode }) => {
   const history = useHistory();
+
+  const { user } = useAuthContext();
 
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -27,7 +30,7 @@ const Visualize = ({ entity, toggleEditMode }) => {
 
   const onRemove = async () => {
     try {
-      await remove(entity.id);
+      await remove(user, entity._id);
 
       history.goBack();
     } catch (error) {

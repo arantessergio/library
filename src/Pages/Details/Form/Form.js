@@ -1,7 +1,15 @@
 import React, { useState } from "react";
-import { Grid, FormControl, TextField, Snackbar } from "@material-ui/core";
+import {
+  Grid,
+  FormControl,
+  TextField,
+  Snackbar,
+  Typography,
+} from "@material-ui/core";
 import { Container, ActionsContainer, Button, Paper } from "../styles";
 import { put, post } from "../../../Services/Api";
+import { useAuthContext } from "../../../Contexts/Auth";
+import { useHistory } from "react-router-dom";
 
 const INITIAL_ENTITY = {
   titulo: "",
@@ -17,8 +25,11 @@ const INITIAL_ENTITY = {
 };
 
 const Form = ({ entity, goBack }) => {
+  const { user } = useAuthContext();
   const [form, setForm] = useState(entity ?? INITIAL_ENTITY);
   const [snack, setSnack] = useState({ show: false, message: "" });
+
+  const history = useHistory();
 
   const handleChange = (key, value) => setForm((x) => ({ ...x, [key]: value }));
 
@@ -32,15 +43,14 @@ const Form = ({ entity, goBack }) => {
 
   const onSave = async () => {
     try {
-      if (form.id) {
-        const result = await put(form, form.id);
-        if (result?.status === 204) {
-          handleSnackbar("Registro atualizado com sucesso");
+      if (form._id) {
+        const result = await put(user, form, form._id);
+        if (result?.data) {
+          handleSnackbar("Livro atualizado com sucesso");
           goBack(form);
         }
       } else {
-        // ERRO DE CORS PARA O POST.
-        const result = await post({
+        const result = await post("books", user, {
           ...form,
           ano: Number(form.ano),
           peso: Number(form.peso),
@@ -48,6 +58,11 @@ const Form = ({ entity, goBack }) => {
           altura: Number(form.altura),
           comprimento: Number(form.comprimento),
         });
+
+        if (result?.data) {
+          handleSnackbar("Livro salvo com sucesso");
+          goBack(true);
+        }
       }
     } catch (error) {
       handleSnackbar("Ocorreu um erro ao processar sua solicitação");
@@ -58,6 +73,7 @@ const Form = ({ entity, goBack }) => {
   return (
     <Container>
       <Paper>
+        <Typography variant="h5">Cadastrar novo livro</Typography>
         <Grid container spacing={2}>
           <Grid item sm={12}>
             <FormControl fullWidth>

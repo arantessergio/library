@@ -29,6 +29,8 @@ import { Header } from "../../Components/Header";
 
 import { FormPage } from "../Details/Form";
 
+import { useAuthContext } from "../../Contexts/Auth";
+
 const INITIAL_FILTERS = {
   page: 1,
   perPage: 20,
@@ -50,24 +52,26 @@ const List = () => {
 
   const [formModal, setFormModal] = useState(false);
 
-  useEffect(() => {
-    const list = async () => {
-      setLoading(true);
-      try {
-        const result = await listApi(filters);
-        if (result?.data?.items) {
-          setData(result.data.items);
-          if (result.data.totalCount) {
-            setTotalPages(Math.ceil(result.data.totalCount / perPage));
-            setCount(result.data.totalCount);
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
-      setLoading(false);
-    };
+  const { user } = useAuthContext();
 
+  const list = async () => {
+    setLoading(true);
+    try {
+      const result = await listApi({ token: user, ...filters });
+      if (result?.data?.docs) {
+        setData(result.data.docs);
+        if (result.data.total) {
+          setTotalPages(Math.ceil(result.data.total / perPage));
+          setCount(result.data.total);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
     !loading && list();
   }, [filters]);
 
@@ -83,6 +87,11 @@ const List = () => {
   };
 
   const toggleFormModal = () => setFormModal(!formModal);
+
+  const doneInsertion = async (reload) => {
+    reload && (await list());
+    toggleFormModal();
+  };
 
   return (
     <>
@@ -164,7 +173,7 @@ const List = () => {
               </TableHead>
               <TableBody>
                 {data.map((row) => (
-                  <TableRow key={row.id}>
+                  <TableRow key={row._id}>
                     <TableCell component="th" scope="row">
                       {row.titulo}
                     </TableCell>
@@ -172,7 +181,7 @@ const List = () => {
                     <TableCell align="left">{row.editora}</TableCell>
                     <TableCell align="right">{row.ano}</TableCell>
                     <TableCell align="center">
-                      <Link to={`/books/${row.id}`}>Ver</Link>
+                      <Link to={`/books/${row._id}`}>Ver</Link>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -195,7 +204,7 @@ const List = () => {
         aria-labelledby="simple-modal-title"
         aria-describedby="simple-modal-description"
       >
-        <FormPage goBack={toggleFormModal} />
+        <FormPage goBack={doneInsertion} />
       </Modal>
     </>
   );

@@ -1,16 +1,29 @@
 import * as axios from "axios";
 
-const BASE_URL = "http://biblioteca.supero.com.br/api";
+const BASE_URL = "http://localhost:4000/api";
 
-export const list = ({ page, perPage, search, startYear, endYear }) =>
+export const list = ({ token, page, perPage, search, startYear, endYear }) =>
   axios.get(
-    `${BASE_URL}/livros?SkipCount=${page}&MaxResultCount=${perPage}&Busca=${search}&AnoInicial=${startYear}&AnoFinal=${endYear}`
+    `${BASE_URL}/books?page=${page}&search=${search}&startYear=${startYear}&endYear${endYear}`,
+    {
+      headers: { authorization: token },
+    }
   );
 
-export const get = (id) => axios.get(`${BASE_URL}/livros/${id}`);
+export const get = (token, id) =>
+  axios.get(`${BASE_URL}/books/${id}`, { headers: { authorization: token } });
 
-export const post = (data) => axios.post(`${BASE_URL}/livros`, data);
+export const post = (sufix, token, data) =>
+  axios.post(`${BASE_URL}/${sufix}`, data, {
+    headers: { authorization: token },
+  });
 
-export const put = (data, id) => axios.put(`${BASE_URL}/livros/${id}`, data);
+export const put = (token, data, id) =>
+  axios.put(`${BASE_URL}/books/${id}`, data, {
+    headers: { authorization: token },
+  });
 
-export const remove = (id) => axios.delete(`${BASE_URL}/livros/${id}`);
+export const remove = (token, id) =>
+  axios.delete(`${BASE_URL}/books/${id}`, {
+    headers: { authorization: token },
+  });

@@ -5,6 +5,7 @@ import { Header } from "../../Components/Header";
 
 import { ViewPage } from "./Visualize";
 import { FormPage } from "./Form";
+import { useAuthContext } from "../../Contexts/Auth";
 
 const INITIAL_ENTITY = {
   id: "",
@@ -25,13 +26,15 @@ const Details = () => {
     params: { id },
   } = useRouteMatch();
 
+  const { user } = useAuthContext();
+
   const [entity, setEntity] = useState(INITIAL_ENTITY);
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     const getBook = async () => {
       try {
-        const result = await get(id);
+        const result = await get(user, id);
         setEntity(result?.data);
       } catch (error) {
         console.error(error);
